@@ -5,6 +5,7 @@
 #include <Ext/Rules/Body.h>
 #include <Ext/Techno/Body.h>
 #include <Ext/TechnoType/Body.h>
+#include <Ext/Team/Body.h>
 
 #include <AITriggerTypeClass.h>
 
@@ -157,7 +158,19 @@ bool OwnStuffs(TechnoTypeClass* pItem, TechnoClass* list) {
 		}
 	}
 
-	return TechnoExtContainer::Instance.Find(list)->Type == pItem || list->GetTechnoType() == pItem;
+	// Check direct type matches
+	if (TechnoExtContainer::Instance.Find(list)->Type == pItem || list->GetTechnoType() == pItem)
+		return true;
+
+	// Check GroupAs relationships for unit conversions
+	auto pListType = list->GetTechnoType();
+	auto pListExtType = TechnoExtContainer::Instance.Find(list)->Type;
+	
+	// Check if the required item can be grouped with the actual unit type
+	if (TeamExtData::GroupAllowed(pItem, pListType) || TeamExtData::GroupAllowed(pItem, pListExtType))
+		return true;
+
+	return false;
 }
 
 NOINLINE bool HouseOwns(AITriggerTypeClass* pThis, HouseClass* pHouse, bool allies, std::vector<TechnoTypeClass*>& list)
